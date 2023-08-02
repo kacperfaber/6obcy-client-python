@@ -98,6 +98,18 @@ class SocketClient:
         self.ceid = 1
         self.listeners = []
 
+    def wait_for_messages(self, *args):
+        offset = len(self.transaction.commands)
+        while True:
+            cmd = self.transaction.read_command(offset)
+            if cmd is None:
+                time.sleep(1)
+                continue
+            offset = offset + 1
+            if cmd.ev_name is not None:
+                if cmd.ev_name in args:
+                    return cmd
+
     def wait_for_message(self, ev_name):
         offset = len(self.transaction.commands)
         while True:
@@ -106,7 +118,7 @@ class SocketClient:
                 time.sleep(1)
                 continue
             offset = offset + 1
-            if cmd.ev_name != None:
+            if cmd.ev_name is not None:
                 if cmd.ev_name == ev_name:
                     return cmd
 
@@ -190,10 +202,19 @@ class ObcyClient:
         ping_thread = threading.Thread(target=self.ping_loop, args=[offset])
         ping_thread.start()
 
-    def find_stranger(self) -> ChannelClient:
+    def find_stranger(self) -> ChannelClient | None:
         self.socket_client.cmd("_sas",
                                dict(channel="main", myself=dict(sex=0, loc=16), preferences=dict(sex=0, loc=16)),
                                with_ceid=False)
-        talk_s_message = self.socket_client.wait_for_message("talk_s")
-        talk_command = self.socket_client.get_cmd(talk_s_message)
-        return ChannelClient(self.socket_client, talk_command.ev_data['ckey'], talk_command.ev_data["cid"])
+        talk_or_captcha_message = self.socket_client.wait_for_messages("talk_s", "caprecvsas")
+        talk_or_captcha_cmd = self.socket_client.get_cmd(talk_or_captcha_message)
+
+        # When I'm 'find_stranger'. I think, when captcha is sent the thread is broke because we're still waiting for stranger. TODO
+
+        if talk_or_captcha_cmd.ev_name == "talk_s":
+            return ChannelClient(self.socket_client, talk_or_captcha_cmd.ev_data['ckey'], talk_or_captcha_cmd.ev_data["cid"])
+
+        return None
+
+    def answer_captcha(self, answer):
+        self.socket_client.cmd("_capsol", dict(solution=answer), with_ceid=False)
