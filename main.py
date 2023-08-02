@@ -7,6 +7,7 @@ import datetime
 
 clientlib = __import__("obcy-client")
 
+
 class CaptchaVerificationRequest(clientlib.CommandListener):
     def command_received(self, command):
         print("Captcha Verification Request!")
@@ -16,6 +17,7 @@ class MessageReceiver(clientlib.CommandListener):
     def command_received(self, command):
         if command.ev_name == "rmsg":
             message_console_log(command.ev_data["msg"], "STR")
+
 
 class TypeStateReceiver(clientlib.CommandListener):
     def command_received(self, command):
@@ -53,20 +55,23 @@ socket_client.transaction.run_receiver()
 client = clientlib.ObcyClient(socket_client)
 channel = None
 
+
 def message_console_log(message_text, sender):
-     msg = message_text
-     if len(msg) < 23:
-       msg = msg + " " * (23 - len(msg))
-       current_time = datetime.datetime.now().strftime("%H:%M:%S")
-       print(f'{current_time} {sender}: {msg}')
-       sys.stdout.flush() 
+    msg = message_text
+    if len(msg) < 23:
+        msg = msg + " " * (23 - len(msg))
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        print(f'{current_time} {sender}: {msg}')
+        sys.stdout.flush()
+
 
 def setup_console():
     os.system("color")
 
+
 def read_input_loop():
     while True:
-        x = input()        
+        x = input()
         global channel
         if x == "/connect":
             channel = client.find_stranger()
@@ -76,7 +81,7 @@ def read_input_loop():
                 channel.disconnect()
                 continue
             channel.send_text_message(x)
-            print ('\033[1A' + '\033[K', end='', flush=True)
+            print('\033[1A' + '\033[K', end='', flush=True)
             message_console_log(x, "YOU")
 
 

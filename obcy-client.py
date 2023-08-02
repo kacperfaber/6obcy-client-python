@@ -20,10 +20,12 @@ class AddedCommandListener(object):
         self.ev_name = ev_name
         self.command_listener = command_listener
 
+
 class IdOffset():
     def __init__(self, id, offset):
         self.id = id
         self.offset = offset
+
 
 class Transaction(object):
     def __init__(self, socket_client):
@@ -38,24 +40,24 @@ class Transaction(object):
 
     def receiver_thread(self):
         while True:
-           r = self.socket_client.socket.recv()
-           if r == "3" or r.startswith("0"):
-               continue
-           cmd = self.socket_client.parse_command_string(r)
-           self.commands.append(cmd)
-           log = open("log.txt", "a+")
-           log.write(cmd.ev_name + "\n")
-           log.close()
-           matched_listeners = self.socket_client.get_registered_listeners_by_name(cmd.ev_name)
-           for matched_listener in matched_listeners:
-               matched_listener.command_received(cmd)
+            r = self.socket_client.socket.recv()
+            if r == "3" or r.startswith("0"):
+                continue
+            cmd = self.socket_client.parse_command_string(r)
+            self.commands.append(cmd)
+            log = open("log.txt", "a+")
+            log.write(cmd.ev_name + "\n")
+            log.close()
+            matched_listeners = self.socket_client.get_registered_listeners_by_name(cmd.ev_name)
+            for matched_listener in matched_listeners:
+                matched_listener.command_received(cmd)
 
     def read_command(self, offset):
         try:
             return self.commands[offset]
-        except: 
+        except:
             return None
-    
+
     def get_offset_for_id(self, id):
         for obj in self.id_objects:
             if obj.id == id:
@@ -75,7 +77,6 @@ class Transaction(object):
             if obj.id == id:
                 obj.offset = obj.offset + 1
 
-
     def read_command_for_id(self, id):
         if self.is_id_exists(id) == False:
             self.make_id(id)
@@ -87,7 +88,8 @@ class Transaction(object):
             time.sleep(1)
             cmd = self.read_command(self.get_offset_for_id(id))
             self.increase_offset_for_id(id)
-            return  cmd
+            return cmd
+
 
 class SocketClient:
     def __init__(self, ws_client):
@@ -142,7 +144,6 @@ class SocketClient:
         if isinstance(message, Command):
             return message
         return Command(message["ev_name"], message["ev_data"], 0)
-        
 
     def register_listener(self, ev_name, command_listener: CommandListener):
         self.listeners.append(AddedCommandListener(ev_name, command_listener))

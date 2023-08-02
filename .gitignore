@@ -2,3 +2,9 @@ __pycache__/
 *.swp
 .swp
 log.txt
+
+# idea
+.idea/
+
+# venv
+/venv/
