@@ -6,11 +6,15 @@ import os
 import datetime
 
 clientlib = __import__("obcy-client")
+captcha_verification_request_dialog = __import__("captcha_verification_request_dialog")
 
 
 class CaptchaVerificationRequest(clientlib.CommandListener):
     def command_received(self, command):
-        print("Captcha Verification Request!")
+        cmd_text = command.ev_data["tlce"]["cmdText"]
+        data = command.ev_data["tlce"]["data"]
+        response = captcha_verification_request_dialog.CaptchaVerificationRequestDialog(cmd_text, data).show()
+        client.answer_captcha(response)
 
 
 class MessageReceiver(clientlib.CommandListener):
