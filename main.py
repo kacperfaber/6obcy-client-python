@@ -78,7 +78,11 @@ def read_input_loop():
         x = input()
         global channel
         if x == "/connect":
-            channel = client.find_stranger()
+            res_channel = client.find_stranger()
+            if res_channel is None:
+                print("Answer the captcha and try again...")
+            else:
+                channel = res_channel
             continue
         if channel is not None:
             if x == "/disc":
