@@ -52,7 +52,7 @@ class Transaction(object):
             for matched_listener in matched_listeners:
                 matched_listener.command_received(cmd)
 
-    def read_command(self, offset):
+    def read_command(self, offset) -> Command | None:
         try:
             return self.commands[offset]
         except:
@@ -212,7 +212,8 @@ class ObcyClient:
         # When I'm 'find_stranger'. I think, when captcha is sent the thread is broke because we're still waiting for stranger. TODO
 
         if talk_or_captcha_cmd.ev_name == "talk_s":
-            return ChannelClient(self.socket_client, talk_or_captcha_cmd.ev_data['ckey'], talk_or_captcha_cmd.ev_data["cid"])
+            return ChannelClient(self.socket_client, talk_or_captcha_cmd.ev_data['ckey'],
+                                 talk_or_captcha_cmd.ev_data["cid"])
 
         return None
 
